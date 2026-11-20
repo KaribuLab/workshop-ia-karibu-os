@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Iniciar sesión
+Name[es]=Iniciar sesión
+Comment=Entrar con tu RUT y tu clave · Aseguradora Los Aromos
+Exec=/config/workshop/scripts/abrir-login.sh
+Icon=avatar-default
+Terminal=false
+Categories=Office;
