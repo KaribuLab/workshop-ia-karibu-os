@@ -37,26 +37,23 @@ Todos los roles leen, guardan y corrigen todas las notas. Lo único con llave so
 |---|---|---|
 | Las 4 personas y las 4 notas fijas (A, B, C, D) | Al crear la base | Solo, desde `db/02-seed.sql` |
 | Dos datos viejos a propósito: link `…/siniestros-2025` (Nota A) y plazo de 60 días (Nota B) | Al crear la base | Vienen así en el seed |
-| Sueldos y claves | Antes del workshop | A mano, con `cargar_ficha` (sección siguiente) |
+| Sueldos y claves de los 4 personajes | Al crear la base | Precargados en la imagen de la base (sección siguiente) |
 | Nota "Cómo pedir un auto de reemplazo" | En vivo, ronda 2 | La persona que hace de Camila se la dicta al agente |
 | Las dos correcciones | En vivo, ronda 3 | Dos participantes se las piden al agente |
 
-## Cargar sueldos y claves
+## Sueldos y claves de los personajes
 
-**Los sueldos y las claves no están en este repositorio**, porque el repositorio se copia completo en el escritorio de cada participante y cualquiera podría leerlos. Se cargan una vez por workshop, después de crear la base, desde una terminal del escritorio del presentador y con el usuario administrador:
+**Los sueldos y las claves no están en este repositorio**, porque el repositorio se copia completo en el escritorio de cada participante y cualquiera podría leerlos. Vienen precargados en la imagen de la base (`postgres-karibu-os/fichas.sql` en el repo privado del runtime), con las claves guardadas solo como hash.
+
+Hay una clave por personaje. Los participantes se reparten en 4 grupos (por ejemplo, 15 personas: 6 Martín, 3 Camila, 3 Diego y 3 Paula) y cada grupo recibe en una tarjeta el RUT y la clave de su personaje. Las claves en texto plano las guarda quien dirige el workshop.
+
+Para cambiar una clave o un sueldo en un workshop en curso, desde la terminal de un escritorio y con el usuario administrador:
 
 ```bash
-PGUSER=workshop_admin PGPASSWORD='<POSTGRES_PASSWORD>' psql <<'SQL'
-SELECT cargar_ficha('11.111.111-1', '<clave de Martín>', '$1.150.000');
-SELECT cargar_ficha('22.222.222-2', '<clave de Camila>', '$1.650.000');
-SELECT cargar_ficha('33.333.333-3', '<clave de Diego>',  '$1.400.000 + comisiones');
-SELECT cargar_ficha('44.444.444-4', '<clave de Paula>',  '$2.300.000');
-SQL
+PGUSER=workshop_admin PGPASSWORD='<POSTGRES_PASSWORD>' psql -c "SELECT cargar_ficha('44.444.444-4', '<clave nueva>', '\$2.300.000')"
 ```
 
-- Cada clave debe tener al menos 10 caracteres y no ser adivinable (no usar el nombre ni el RUT). Por ejemplo: `openssl rand -base64 9`.
-- Volver a ejecutar `cargar_ficha` cambia la clave y cierra las sesiones de esa persona.
-- La clave de cada persona se entrega solo a quien hace ese papel.
+La clave debe tener al menos 10 caracteres y no ser adivinable. Cambiarla cierra las sesiones abiertas de ese personaje. Para cambiarlas en todos los workshops futuros, regenerar `fichas.sql` en el runtime y republicar la imagen de la base.
 
 ## Cómo funciona la llave de los sueldos
 
@@ -139,7 +136,7 @@ docker run --rm -d --name memoria-pg -p 5432:5432 \
   -v "$PWD/db":/docker-entrypoint-initdb.d:ro postgres:16-alpine
 ```
 
-Después se cargan las fichas con `workshop_admin` y se trabaja como participante:
+La imagen local de `db/` no trae fichas: se cargan con `cargar_ficha` como `workshop_admin` y se trabaja como participante:
 
 ```bash
 export PGHOST=127.0.0.1 PGDATABASE=workshop PGUSER=workshop_rw PGPASSWORD=rw PGAPPNAME=mi-usuario
@@ -160,7 +157,7 @@ Los archivos de `db/` se ejecutan en orden alfabético al crear la base.
 ## Checklist para la prueba
 
 - [ ] Workshop creado con el perfil `karibu-os` y la vigencia de las llaves del modelo (`openrouterKeyTtlMinutes`) cubriendo toda la sesión
-- [ ] Sueldos y claves cargados con `cargar_ficha`
+- [ ] Tarjetas de personaje (RUT + clave) listas para los 4 grupos
 - [ ] Las skills aparecen en OpenCode y la página de inicio de sesión abre en el navegador del escritorio
 - [ ] Los 14 pasos del guion corridos de punta a punta
 - [ ] Varias personas a la vez escribiendo en la misma base, para revisar los límites de uso del modelo
